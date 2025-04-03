@@ -95,4 +95,20 @@ def update_post(request: Request, post_id: int) -> Response:
 
 @api_view(http_method_names=["DELETE"])
 def delete_post(request: Request, post_id: int) -> Response:
-    return Response(status=status.HTTP_200_OK)
+    try:
+        post = Post.objects.get(id=post_id)
+        post.delete()
+        response = {
+            "message": f"Post with the Id {post_id} Deleted Successfully",
+        }
+        return Response(data=response, status=status.HTTP_204_NO_CONTENT)
+    except Post.DoesNotExist:
+        response = {
+            "message": f"Post with the following ID {post_id} does not exist",
+        }
+        return Response(data=response, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        response = {
+            "message": f"An unexpected error occurred: {str(e)}",
+        }
+        return Response(data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
