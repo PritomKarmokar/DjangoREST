@@ -5,7 +5,7 @@ from .views import PostListCreateAPIView, PostRetrieveUpdateDeleteAPIView
 urlpatterns = [
     path("", PostListCreateAPIView.as_view(), name="post_list_create"),
     path(
-        "<int:post_id>/",
+        "<int:pk>/",
         PostRetrieveUpdateDeleteAPIView.as_view(),
         name="post_retrieve_update_delete",
     ),
