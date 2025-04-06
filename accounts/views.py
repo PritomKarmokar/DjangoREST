@@ -1,8 +1,10 @@
-from rest_framework import generics, status
-from rest_framework.authtoken.models import Token
-from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.request import Request
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from django.contrib.auth import authenticate, login, logout
 
 from .serializers import SignUpSerializer
@@ -38,11 +40,12 @@ class LoginAPIView(APIView):
         user = authenticate(email=email, password=password)
 
         if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
+            refresh = RefreshToken.for_user(user)
+
             response = {
-                "user": str(user.get_username()),
-                "token": user.get_session_auth_hash(),
-                "auth_token": token.key,
+                "user": f"{user.get_username()} logged in successfully",
+                "access_token": str(refresh.access_token),
+                "refresh_token": str(refresh),
             }
 
             return Response(data=response, status=status.HTTP_200_OK)
