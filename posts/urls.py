@@ -1,12 +1,14 @@
 from django.urls import path
 
 from .views import (
+    HomePageAPIView,
     PostListCreateAPIView,
     PostRetrieveUpdateDeleteAPIView,
     UserPostListAPIView,
 )
 
 urlpatterns = [
+    path("homepage/", HomePageAPIView.as_view(), name="home"),
     path("", PostListCreateAPIView.as_view(), name="post_list_create"),
     path(
         "<int:pk>/",

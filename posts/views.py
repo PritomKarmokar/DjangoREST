@@ -1,12 +1,32 @@
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.decorators import APIView
 from rest_framework import status, generics, mixins
+from rest_framework.permissions import (
+    AllowAny,
+    IsAdminUser,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 
 from .models import Post
 from .serializers import PostSerializer
 from accounts.serializers import UserPostSerializer
+from .permissions import ReadOnly, AuthorOrReadOnly
+
+
+class HomePageAPIView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = PostSerializer
+
+    def get(self, request: Request) -> Response:
+        posts = Post.objects.all()
+        serializer = self.serializer_class(posts, many=True)
+        response = {
+            "message": "Currently, Available Posts",
+            "posts": serializer.data,
+        }
+        return Response(data=response, status=status.HTTP_200_OK)
 
 
 class PostListCreateAPIView(
@@ -17,6 +37,7 @@ class PostListCreateAPIView(
     """
 
     serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Post.objects.all().order_by("-created_at")
 
     def perform_create(self, serializer):
@@ -42,6 +63,7 @@ class PostRetrieveUpdateDeleteAPIView(
     """
 
     serializer_class = PostSerializer
+    permission_classes = [AuthorOrReadOnly]
     queryset = Post.objects.all()
 
     def get(self, request: Request, *args, **kwargs) -> Response:
