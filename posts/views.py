@@ -76,11 +76,25 @@ class PostRetrieveUpdateDeleteAPIView(
         return self.destroy(request, *args, **kwargs)
 
 
-class UserPostListAPIView(APIView):
+# class UserPostListAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = UserPostSerializer
+#
+#     def get(self, request: Request, *args, **kwargs) -> Response:
+#         user = self.request.user
+#         serializer = self.serializer_class(instance=user)
+#         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class UserPostListCreateAPIView(generics.GenericAPIView, mixins.ListModelMixin):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
-    serializer_class = UserPostSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return Post.objects.filter(author=user)
 
     def get(self, request: Request, *args, **kwargs) -> Response:
-        user = self.request.user
-        serializer = self.serializer_class(instance=user)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return self.list(request, *args, **kwargs)
