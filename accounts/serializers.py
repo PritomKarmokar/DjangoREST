@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import ValidationError
 
+from posts.serializers import PostSerializer
 from .models import User
 
 
@@ -32,3 +33,15 @@ class SignUpSerializer(serializers.ModelSerializer):
         Token.objects.create(user=user)
 
         return user
+
+
+class UserPostSerializer(serializers.ModelSerializer):
+    posts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "username", "posts"]
+
+    def get_posts(self, obj):
+        posts = obj.posts.all()
+        return PostSerializer(posts, many=True).data
