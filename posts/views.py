@@ -76,14 +76,14 @@ class PostRetrieveUpdateDeleteAPIView(
         return self.destroy(request, *args, **kwargs)
 
 
-# class UserPostListAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = UserPostSerializer
-#
-#     def get(self, request: Request, *args, **kwargs) -> Response:
-#         user = self.request.user
-#         serializer = self.serializer_class(instance=user)
-#         return Response(data=serializer.data, status=status.HTTP_200_OK)
+class UserPostListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserPostSerializer
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        user = self.request.user
+        serializer = self.serializer_class(instance=user)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class UserPostListCreateAPIView(generics.GenericAPIView, mixins.ListModelMixin):
