@@ -44,14 +44,15 @@ class LoginAPIView(APIView):
     @swagger_auto_schema(
         operation_summary="Login an user and generate token",
         operation_description="This endpoint logins a user and generates a token",
+        request_body=LoginSerializer,
     )
     def post(self, request: Request) -> Response:
         data = request.data
         serializer = self.serializer_class(data=data)
 
         if serializer.is_valid():
-            email = serializer["email"]
-            password = serializer["password"]
+            email = serializer.data["email"]
+            password = serializer.data["password"]
 
             user = authenticate(email=email, password=password)
 
