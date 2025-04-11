@@ -45,3 +45,8 @@ class UserPostSerializer(serializers.ModelSerializer):
     def get_posts(self, obj):
         posts = obj.posts.all()
         return PostSerializer(posts, many=True).data
+
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(min_length=5)

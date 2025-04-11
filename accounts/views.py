@@ -3,18 +3,23 @@ from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from drf_yasg.utils import swagger_auto_schema
 
 from django.contrib.auth import authenticate, login, logout
 
-from .serializers import SignUpSerializer
+from .serializers import SignUpSerializer, LoginSerializer
 
 
 class SignUpAPIView(generics.GenericAPIView):
     serializer_class = SignUpSerializer
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        operation_summary="Signup a new user account",
+        operation_description="This endpoint signs up a new user",
+    )
     def post(self, request: Request, *args, **kwargs):
         data = request.data
         serializer = self.serializer_class(data=data)
@@ -34,28 +39,36 @@ class SignUpAPIView(generics.GenericAPIView):
 
 class LoginAPIView(APIView):
     permission_classes = []
+    serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        operation_summary="Login an user and generate token",
+        operation_description="This endpoint logins a user and generates a token",
+    )
     def post(self, request: Request) -> Response:
-        email = request.data.get("email")
-        password = request.data.get("password")
+        data = request.data
+        serializer = self.serializer_class(data=data)
 
-        user = authenticate(email=email, password=password)
+        if serializer.is_valid():
+            email = serializer["email"]
+            password = serializer["password"]
 
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
+            user = authenticate(email=email, password=password)
 
-            response = {
-                "user": f"{user.get_username()} logged in successfully",
-                "access_token": str(refresh.access_token),
-                "refresh_token": str(refresh),
-            }
+            if user is not None:
+                refresh = RefreshToken.for_user(user)
 
-            return Response(data=response, status=status.HTTP_200_OK)
+                response = {
+                    "user": f"{user.get_username()} logged in successfully",
+                    "access_token": str(refresh.access_token),
+                    "refresh_token": str(refresh),
+                }
 
-        return Response(
-            data={"message": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST
-        )
+                return Response(data=response, status=status.HTTP_200_OK)
 
-    def get(self, request: Request) -> Response:
-        content = {"user": str(request.user), "token": str(request.auth)}
-        return Response(data=content, status=status.HTTP_200_OK)
+            return Response(
+                data={"message": "Invalid credentials"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        else:
+            return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
